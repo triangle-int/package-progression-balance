@@ -20,7 +20,7 @@ with st.form(key='constants_form'):
     left_column.write('Множители')
     a = left_column.number_input(label='a (Амплитуда главной кривой)', value=2.0, step=0.1)
     b = left_column.number_input(label='b (Амплитуда волн)', value=40.0, step=0.1)
-    c = left_column.number_input(label='c', value=0.2, step=0.1)
+    c = left_column.number_input(label='c (Период волн)', value=0.2, step=0.1)
     
     right_column.write('Степени')
     k = right_column.number_input(label='k (Склон главной кривой)', value=3.0, step=0.1)
