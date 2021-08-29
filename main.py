@@ -1,67 +1,54 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.graph_objects as go
-from math import floor
+import streamlit as st
+# To make things easier later, we're also importing numpy and pandas for
+# working with sample data.
+import numpy as np
+import pandas as pd
 
-''' 
-# Business constants
-start_deposit = 2
-degree_of_level = 2
-degree_of_dependence = 2
-start_time = 1
-end_time = 20160
-max_level = 125
+"""
+# Баланс прогрессии в :package: Package
+Для того чтобы увидеть результат необходимо ввести исходные коэффиценты, которые будут подставлены в формулу:
+"""
+
+st.latex(r'''y = ax^k + bx^m * |\sin(cx^n)|''')
+
+with st.form(key='constants_form'):
+    '''
+    ## Коэффиценты
+    '''
+    left_column, right_column = st.columns(2)
+
+    left_column.write('Множители')
+    a = left_column.number_input(label='a', value=1.0, step=0.1)
+    b = left_column.number_input(label='b', value=1.0, step=0.1)
+    c = left_column.number_input(label='c', value=1.0, step=0.1)
+    
+    right_column.write('Степени')
+    k = right_column.number_input(label='k (Склон функции)', value=3.0, step=0.1)
+    m = right_column.number_input(label='m', value=0.5, step=0.1)
+    n = right_column.number_input(label='n', value=0.5, step=0.1)
+    
+    '''
+    ## Дополнительные параметры
+    '''
+    max_level = st.number_input(label='Максимальный уровень', value=1, min_value=1)
+
+    submit_button = st.form_submit_button(label='Смоделировать')
+
+'''
+Финальная формула будет выглядеть так:
 '''
 
-# Factory constants
-# Production speed
-degree_of_level = 1.5
-start_deposit = 2
-# Time
-degree_of_dependence = 2
-start_time = 2
-end_time = 43200
+st.latex(fr'''y = {a}x^{{{k}}} + {b}x^{{{m}}} * |\sin({c}x^{{{n}}})|''')
 
-max_level = 80
+if submit_button:
+    levels = np.arange(max_level) + 1
+    volume_to_up = a * np.power(levels, k) + b * np.power(levels, m) * np.sin(c * np.power(levels, n))
 
-levels = list()
-upgrade_values = list()
-production = list()
-time_minutes = list()
-time_hours = list()
-time_days = list()
+    df = pd.DataFrame({
+        'Уровень': levels,
+        'Объем для повышения уровня': volume_to_up,
+    })
 
-for level in range(max_level):
-    levels.append(level + 1)
-    # Linear interpolation between start and end time
-    time_minutes.append(1 + (levels[level] / max_level) ** degree_of_dependence * (end_time - start_time))
-    # Production = level^a * b
-    production.append(floor(levels[level] ** degree_of_level * start_deposit))
-    # S = Production * Time
-    upgrade_values.append(floor(time_minutes[level] * production[level]))
-    # Time representation
-    time_hours.append(floor(time_minutes[level] / 60))
-    time_days.append(floor(time_minutes[level] / 1440))
+    df
 
-fig = go.Figure(data=[go.Table(header=dict(values=['Level', 'Production', 'Value for upgrade',
-                                                   'Time to next level (minutes)',
-                                                   'Time to next level (hours)',
-                                                   'Time to next level (days)'],
-                                           fill_color='paleturquoise',
-                                           align='right'),
-                               cells=dict(values=[levels, production, upgrade_values,
-                                                  time_minutes, time_hours, time_days],
-                                          fill_color='lavender',
-                                          align='right'))
-                      ])
-
-fig.update_layout(width=1280, height=720)
-
-app = dash.Dash()
-app.layout = html.Div([
-    dcc.Graph(figure=fig)
-])
-
-app.run_server(debug=True, use_reloader=False)  # Turn off reloader if inside Jupyter
-
+    st.line_chart(df)
