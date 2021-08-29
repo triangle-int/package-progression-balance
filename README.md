@@ -1,2 +1,2 @@
-# package-progression-balance
-Level balancer for Package Game
+# Баланс прогрессии в :package: Package
+Баланс для разных уровней прокачки в игре Package
