@@ -49,6 +49,6 @@ if submit_button:
         'Объем для повышения уровня': volume_to_up,
     })
 
-    df
+    st.dataframe(df.style.format('{:.0f}'))
 
     st.line_chart(df)
